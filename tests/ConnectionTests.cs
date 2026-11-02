@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -124,6 +125,8 @@ internal static partial class ConnectionTests
             Call(main, "ClearMarks"); Assert(((List<CloudFile>)Call(main, "SelectedFiles")).Count == 0, "Clear selection must remove marks and focused-row selection.");
             Call(main, "Navigate", "filesystem"); FilesystemWindow fs = (FilesystemWindow)Field(main, "filesystemView"); await fs.InitializeAsync();
             ActionToolbar toolbar = (ActionToolbar)Field(fs, "actionRows");
+            // Set the wide layout explicitly; Show() can clamp the initial form to a smaller desktop.
+            main.ClientSize = new Size((int)(1280 * (main.DeviceDpi / 96f)), main.ClientSize.Height); main.PerformLayout(); fs.PerformLayout(); await Task.Delay(20);
             Assert(toolbar.Controls.Count == 12 && toolbar.ColumnCount == 6 && toolbar.Controls.Cast<Control>().Max(c => c.Width) - toolbar.Controls.Cast<Control>().Min(c => c.Width) <= 1, "Desktop toolbar buttons must have equal proportional widths.");
             main.Size = main.MinimumSize; main.PerformLayout(); fs.PerformLayout(); await Task.Delay(20);
             Assert(toolbar.ColumnCount == 4 && toolbar.RequiredHeight == (int)((TableLayoutPanel)Field(fs, "layout")).RowStyles[4].Height && toolbar.Controls.Cast<Control>().All(c => c.Right <= toolbar.ClientSize.Width && c.Bottom <= toolbar.ClientSize.Height), "Narrow windows must reflow all actions without clipped buttons. Toolbar " + toolbar.Size + ", required " + toolbar.RequiredHeight + ".");
